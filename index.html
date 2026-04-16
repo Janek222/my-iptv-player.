@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, initial-scale=1.0, user-scalable=no">
+  <title>MSX IPTV Web Player</title>
+  <style>
+    :root{--bg:#0a0a0a;--panel:#151515;--text:#e6e6e6;--accent:#00bfff;--focus:#ffd700}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;height:100vh;display:flex;flex-direction:column;padding:20px 30px;overflow:hidden}
+    .top{display:flex;gap:10px;padding:10px;background:var(--panel);border-radius:8px;margin-bottom:12px}
+    input,button{font-size:16px;padding:8px 12px;border-radius:6px;border:1px solid #444;background:#222;color:var(--text)}
+    button{background:var(--accent);color:#000;font-weight:bold}
+    button:focus,input:focus{outline:3px solid var(--focus)}
+    .main{display:flex;flex:1;gap:12px;overflow:hidden}
+    .list{width:340px;background:var(--panel);border-radius:8px;position:relative;overflow:hidden}
+    .scroll-container{height:100%;overflow-y:auto;scroll-behavior:smooth}
+    .item{padding:12px 14px;margin:4px 0;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:10px}
+    .item.focused{background:var(--accent);color:#000;outline:2px solid var(--focus)}
+    .item.active{background:#004a6b}
+    .logo{width:40px;height:40px;border-radius:6px;object-fit:cover;background:#222}
+    .name{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+    .player{flex:1;background:#000;border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center}
+    video{width:100%;height:100%;background:#000}
+    .status{position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.7);padding:6px 10px;border-radius:4px;font-size:13px}
+    .err{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(60,0,0,0.85);color:#ff8888;padding:15px;border-radius:6px;display:none;text-align:center}
+    .hint{position:absolute;bottom:8px;right:10px;font-size:12px;color:#aaa;background:rgba(0,0,0,0.6);padding:4px 8px;border-radius:3px}
+  </style>
+</head>
+<body>
+  <div class="top">
+    <input id="urlIn" placeholder="https://ваш-бэкенд.onrender.com/msx?url=...&key=...">
+    <button id="loadBtn">Загрузить</button>
+  </div>
+  <div class="main">
+    <div class="list" id="chList"><div class="scroll-container" id="scrollCont"></div></div>
+    <div class="player">
+      <video id="vid" playsinline autoplay></video>
+      <div class="status" id="st">Готово</div>
+      <div class="err" id="err"></div>
+      <div class="hint">↑↓ Навигация | OK ▶ | Back ↩ Выход</div>
+    </div>
+  </div>
+<script>
+  const ITEM_H = 72, VISIBLE = 8, BUFFER = 4;
+  let channels = [], focusIdx = -1, scrollTop = 0, rendered = new Set();
+  const vid = document.getElementById('vid'), st = document.getElementById('st'), err = document.getElementById('err');
+  const scrollCont = document.getElementById('scrollCont'), urlIn = document.getElementById('urlIn'), loadBtn = document.getElementById('loadBtn');
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('url')) { urlIn.value = params.get('url'); loadService(); }
+
+  // Обработка пульта ТВ (стандартные коды для Tizen/webOS)
+  document.addEventListener('keydown', e => {
+    const k = e.keyCode || e.which;
+    if (k===10009 || k===413 || k===27) { e.preventDefault(); if(confirm('Закрыть плеер?')) window.close(); return; }
+    if (k===38 || k===10004) { e.preventDefault(); moveFocus(-1); return; }
+    if (k===40 || k===10005) { e.preventDefault(); moveFocus(1); return; }
+    if (k===13 || k===415 || k===10252) { e.preventDefault(); playFocused(); return; }
+    if (k===37) { e.preventDefault(); vid.volume = Math.max(0, vid.volume - 0.1); }
+    if (k===39) { e.preventDefault(); vid.volume = Math.min(1, vid.volume + 0.1); }
+  });
+
+  scrollCont.addEventListener('scroll', () => { scrollTop = scrollCont.scrollTop; renderWindow(); });
+
+  function moveFocus(dir) {
+    if (!channels.length) return;
+    focusIdx = focusIdx===-1 ? (dir>0?0:channels.length-1) : (focusIdx+dir+channels.length)%channels.length;
+    scrollToFocus(); renderWindow();
+  }
+  function scrollToFocus() {
+    const targetY = focusIdx * ITEM_H;
+    scrollCont.scrollTo({top: targetY - (VISIBLE/2)*ITEM_H, behavior:'smooth'});
+  }
+  function playFocused() { if(focusIdx>=0 && focusIdx<channels.length) play(channels[focusIdx]); }
+
+  async function loadService() {
+    const url = urlIn.value.trim();
+    if (!url) return showErr('Укажите URL MSX-сервиса');
+    st.textContent='Загрузка...'; err.style.display='none'; scrollCont.innerHTML='';
+    focusIdx=-1; channels=[]; rendered.clear();
+    try {
+      const res = await fetch(url, {headers:{'Accept':'application/json'}});
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      channels = (data.menu?.items?.[0]?.items || []).map((ch,i)=>({...ch, idx:i}));
+      scrollCont.style.height = `${channels.length * ITEM_H}px`;
+      st.textContent=`Каналов: ${channels.length}`;
+      if (channels.length) { focusIdx=0; scrollToFocus(); renderWindow(); }
+    } catch(e) { showErr('Ошибка: '+e.message); }
+  }
+
+  function renderWindow() {
+    const start = Math.max(0, Math.floor(scrollTop / ITEM_H) - BUFFER);
+    const end = Math.min(channels.length, Math.ceil((scrollTop + scrollCont.clientHeight) / ITEM_H) + BUFFER);
+    rendered.forEach(i => { if(i<start || i>=end) { scrollCont.querySelector(`[data-idx="${i}"]`)?.remove(); rendered.delete(i); }});
+    for (let i=start; i<end; i++) {
+      if (rendered.has(i)) continue;
+      const ch = channels[i];
+      const div = document.createElement('div');
+      div.className = 'item' + (i===focusIdx?' focused':'') + (i===focusIdx?' active':'');
+      div.dataset.idx = i; div.style.position='absolute'; div.style.top=`${i*ITEM_H}px`; div.style.left='0'; div.style.right='0';
+      div.innerHTML = `<img class="logo" src="${ch.logo||'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%23222%22 width=%2240%22 height=%2240%22/><text x=%2220%22 y=%2226%22 text-anchor=%22middle%22 fill=%22%23888%22 font-size=%2216%22>?</text></svg>'}">
+                       <div class="name">${ch.title}</div>`;
+      div.onclick = () => { focusIdx = i; scrollToFocus(); playFocused(); };
+      scrollCont.appendChild(div); rendered.add(i);
+    }
+  }
+
+  function play(ch) {
+    document.querySelectorAll('.item').forEach(el=>el.classList.remove('active'));
+    scrollCont.querySelector(`.item.focused`)?.classList.add('active');
+    st.textContent=`▶ ${ch.title}`; err.style.display='none';
+    vid.src = ch.url; vid.play().catch(e=>console.warn('Autoplay blocked, click OK first'));
+    vid.onerror = () => showErr('Ошибка воспроизведения');
+  }
+
+  function showErr(msg) { err.textContent=msg; err.style.display='block'; st.textContent='Ошибка'; }
+  loadBtn.onclick = loadService;
+</script>
+</body>
+</html>
