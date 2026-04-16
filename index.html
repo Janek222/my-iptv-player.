@@ -14,258 +14,109 @@
       --text: #ffffff;
       --text-dim: #888888;
       --accent: #00d4ff;
-      --accent-dark: #0099cc;
-      --focus: #ffd700;
-      --success: #00ff88;
       --error: #ff4444;
-      --epg-bg: #1a1a2e;
-      --gradient: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+      --success: #00ff88;
     }
-    
-    * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
-    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
-
     .header {
-      padding: 12px 24px;
+      padding: 15px 24px;
       background: var(--panel);
       border-bottom: 2px solid var(--accent);
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      flex-shrink: 0;
+      align-items: center;
     }
+    .title { font-size: 20px; font-weight: bold; color: var(--accent); }
+    .stats { font-size: 12px; color: var(--text-dim); display: flex; gap: 20px; }
+    .stats span { color: var(--accent); }
     
-    .header-left { display: flex; align-items: center; gap: 12px; }
-    .logo-icon { font-size: 24px; }
-    .header-title {
-      font-size: 22px;
-      font-weight: 700;
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: 1px;
-    }
-    .header-stats {
-      display: flex;
-      gap: 20px;
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-    .stat { display: flex; align-items: center; gap: 6px; }
-    .stat-value { color: var(--accent); font-weight: 600; }
-    .stat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
-
     .main { display: flex; flex: 1; overflow: hidden; }
-
-    .sidebar {
-      width: 400px;
-      background: var(--panel);
-      border-right: 1px solid #333;
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-    }
-
-    .controls {
-      padding: 15px;
-      background: var(--panel-light);
-      border-bottom: 1px solid #333;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    .sidebar { width: 350px; background: var(--panel); border-right: 1px solid #333; display: flex; flex-direction: column; }
     
-    .search-box { position: relative; }
+    .search-box { padding: 15px; border-bottom: 1px solid #333; }
     .search-box input {
       width: 100%;
-      padding: 10px 15px 10px 40px;
-      background: var(--bg);
-      border: 1px solid #333;
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 14px;
-    }
-    .search-box input:focus { border-color: var(--accent); }
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-dim);
-    }
-    
-    .filters { display: flex; gap: 8px; flex-wrap: wrap; }
-    .filter-btn {
-      padding: 6px 12px;
+      padding: 10px;
       background: var(--bg);
       border: 1px solid #333;
       border-radius: 6px;
-      color: var(--text-dim);
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .filter-btn:hover, .filter-btn.active {
-      background: var(--accent);
-      color: #000;
-      border-color: var(--accent);
-    }
-
-    .epg-panel {
-      padding: 15px;
-      background: var(--epg-bg);
-      border-bottom: 1px solid #333;
-      flex-shrink: 0;
-    }
-    .epg-channel-name {
+      color: white;
       font-size: 14px;
-      font-weight: 600;
-      color: var(--accent);
-      margin-bottom: 10px;
     }
-    .epg-now {
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
-    .epg-next {
-      color: var(--text-dim);
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
-    .epg-progress {
-      height: 4px;
-      background: #333;
-      border-radius: 2px;
-      overflow: hidden;
-      margin-bottom: 6px;
-    }
-    .epg-progress-bar {
-      height: 100%;
-      background: var(--gradient);
-      width: 0%;
-      transition: width 0.5s ease;
-    }
-    .epg-time {
-      font-size: 11px;
-      color: var(--text-dim);
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .channel-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px;
-    }
-    .channel-list::-webkit-scrollbar { width: 6px; }
-    .channel-list::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
     
+    .channel-list { flex: 1; overflow-y: auto; padding: 8px; }
     .channel {
-      padding: 12px 15px;
+      padding: 12px;
       margin: 4px 0;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 12px;
-      transition: all 0.2s;
+      gap: 10px;
       border: 2px solid transparent;
     }
-    .channel:hover {
-      background: var(--panel-light);
-      transform: translateX(3px);
-    }
-    .channel.focused {
-      background: rgba(0, 212, 255, 0.15);
-      border-color: var(--accent);
-      transform: translateX(5px);
-    }
-    .channel.active {
-      background: rgba(0, 212, 255, 0.2);
-      border-color: var(--accent);
-    }
+    .channel:hover { background: var(--panel-light); }
+    .channel.focused { border-color: var(--accent); background: rgba(0, 212, 255, 0.1); }
+    .channel.active { border-color: var(--accent); background: rgba(0, 212, 255, 0.2); }
+    .channel-logo { width: 40px; height: 40px; border-radius: 6px; background: #333; }
+    .channel-name { font-size: 14px; font-weight: 600; }
+    .channel-epg { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
     
-    .channel-logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 8px;
-      object-fit: cover;
-      background: var(--panel-light);
-      flex-shrink: 0;
-    }
-    .channel-info { flex: 1; min-width: 0; }
-    .channel-name {
-      font-size: 15px;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 3px;
-    }
-    .channel-epg {
-      font-size: 12px;
-      color: var(--text-dim);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .channel-fav {
-      font-size: 18px;
-      color: var(--text-dim);
-      cursor: pointer;
-    }
-    .channel-fav.active { color: var(--focus); }
-
-    .player {
-      flex: 1;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-    video {
-      width: 100%;
-      height: 100%;
-      background: #000;
-    }
+    .player { flex: 1; background: #000; display: flex; align-items: center; justify-content: center; position: relative; }
+    video { width: 100%; height: 100%; max-height: 100vh; }
     
-    .player-info {
+    .status {
       position: absolute;
       top: 20px;
       left: 20px;
-      right: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      pointer-events: none;
+      background: rgba(0,0,0,0.8);
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 13px;
+      max-width: 400px;
     }
-    .player-channel {
-      font-size: 20px;
-      font-weight: 700;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    .status-item { margin: 5px 0; display: flex; align-items: center; gap: 8px; }
+    .status-ok { color: var(--success); }
+    .status-error { color: var(--error); }
+    .status-warn { color: #ffa500; }
+    
+    .error-box {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(50, 0, 0, 0.9);
+      border: 2px solid var(--error);
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      display: none;
     }
-    .player-epg {
-      font-size: 14px;
-      color: var(--text-dim);
-      margin-top: 5px;
-    }
-    .player-time {
-      font-size: 14px;
-      color: var(--accent);
-      font-weight: 600;
+    .error-box.show { display: block; }
+    .error-icon { font-size: 48px; margin-bottom: 15px; }
+    .error-title { font-size: 18px; margin-bottom: 10px; color: var(--error); }
+    .error-text { font-size: 13px; color: var(--text-dim); margin: 10px 0; }
+    .error-code { 
+      background: rgba(0,0,0,0.5); 
+      padding: 10px; 
+      border-radius: 4px; 
+      font-family: monospace; 
+      font-size: 11px; 
+      margin: 10px 0;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
     }
     
-    .player-controls {
+    .controls {
       position: absolute;
       bottom: 30px;
       left: 50%;
@@ -273,235 +124,158 @@
       display: flex;
       gap: 15px;
     }
-    .control-btn {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
+    .btn {
+      padding: 10px 20px;
       background: rgba(255,255,255,0.1);
       border: 2px solid rgba(255,255,255,0.3);
-      color: white;
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-    .control-btn:hover {
-      background: var(--accent);
-      border-color: var(--accent);
-      transform: scale(1.1);
-    }
-    
-    .player-hint {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      font-size: 12px;
-      color: rgba(255,255,255,0.6);
-      background: rgba(0,0,0,0.6);
-      padding: 8px 12px;
-      border-radius: 6px;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: var(--panel-light);
-      border: 1px solid var(--accent);
-      padding: 12px 24px;
       border-radius: 8px;
+      color: white;
+      cursor: pointer;
       font-size: 14px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-      opacity: 0;
-      transition: all 0.3s;
-      z-index: 1000;
     }
-    .toast.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
-
-    .loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px;
-      color: var(--text-dim);
-    }
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid var(--panel-light);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .video-error {
+    .btn:hover { background: var(--accent); border-color: var(--accent); color: black; }
+    
+    .debug-info {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      color: var(--error);
-      font-size: 16px;
+      bottom: 10px;
+      right: 10px;
+      font-size: 11px;
+      color: var(--text-dim);
+      background: rgba(0,0,0,0.6);
+      padding: 5px 10px;
+      border-radius: 4px;
     }
-    .video-error-icon { font-size: 48px; margin-bottom: 15px; }
   </style>
 </head>
 <body>
-
   <div class="header">
-    <div class="header-left">
-      <span class="logo-icon">📺</span>
-      <div class="header-title">IPTV_FORK</div>
-    </div>
-    <div class="header-stats">
-      <div class="stat">
-        <div class="stat-dot"></div>
-        <span>Каналов: <span class="stat-value" id="statChannels">0</span></span>
-      </div>
-      <div class="stat">
-        <span>EPG: <span class="stat-value" id="statEPG">—</span></span>
-      </div>
-      <div class="stat">
-        <span>Избранное: <span class="stat-value" id="statFav">0</span></span>
-      </div>
+    <div class="title">📺 IPTV_FORK</div>
+    <div class="stats">
+      <div>Каналов: <span id="chCount">0</span></div>
+      <div>EPG: <span id="epgStatus">—</span></div>
     </div>
   </div>
 
   <div class="main">
     <div class="sidebar">
-      <div class="controls">
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="searchInput" placeholder="Поиск каналов..." autocomplete="off">
-        </div>
-        <div class="filters">
-          <button class="filter-btn active" data-filter="all">Все</button>
-          <button class="filter-btn" data-filter="fav">⭐ Избранное</button>
-        </div>
+      <div class="search-box">
+        <input type="text" id="search" placeholder="🔍 Поиск каналов...">
       </div>
-
-      <div class="epg-panel" id="epgPanel" style="display:none">
-        <div class="epg-channel-name" id="epgChannelName">—</div>
-        <div class="epg-now" id="epgNow">Загрузка...</div>
-        <div class="epg-next" id="epgNext">Далее: —</div>
-        <div class="epg-progress">
-          <div class="epg-progress-bar" id="epgProgress"></div>
-        </div>
-        <div class="epg-time" id="epgTime">00:00 — 00:00</div>
-      </div>
-
-      <div class="channel-list" id="channelList">
-        <div class="loading">
-          <div class="spinner"></div>
-        </div>
-      </div>
+      <div class="channel-list" id="list"></div>
     </div>
 
     <div class="player" id="player">
       <video id="video" controls autoplay playsinline></video>
-      <div class="player-info">
-        <div>
-          <div class="player-channel" id="playerChannel">Выберите канал</div>
-          <div class="player-epg" id="playerEpg">—</div>
-        </div>
-        <div class="player-time" id="playerTime"></div>
+      
+      <div class="status" id="status">
+        <div class="status-item">📡 Загрузка...</div>
       </div>
-      <div class="player-controls">
-        <button class="control-btn" onclick="toggleMute()" title="Звук">🔊</button>
-        <button class="control-btn" onclick="toggleFullscreen()" title="На весь экран">⛶</button>
-        <button class="control-btn" onclick="toggleFav()" title="В избранное">⭐</button>
+
+      <div class="error-box" id="errorBox">
+        <div class="error-icon">📺</div>
+        <div class="error-title" id="errorTitle">Ошибка воспроизведения</div>
+        <div class="error-text" id="errorText"></div>
+        <div class="error-code" id="errorCode"></div>
+        <button class="btn" onclick="closeError()" style="margin-top:15px">Закрыть</button>
       </div>
-      <div class="player-hint">↑↓ Навигация | OK ▶ | Back ↩ | F Избранное</div>
+
+      <div class="controls">
+        <button class="btn" onclick="testPlaylist()">🔄 Тест потока</button>
+        <button class="btn" onclick="toggleDebug()">🐛 Debug</button>
+      </div>
+
+      <div class="debug-info" id="debugInfo" style="display:none"></div>
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
-
 <script>
-  // 🔹 КОНФИГУРАЦИЯ
   const CONFIG = {
     playlist: 'https://skaz.tv/play/82866376f',
-    epg: 'http://skaztv.online/epg6.xml.gz'  // ✅ НОВЫЙ EPG С АРХИВОМ 6 ДНЕЙ
+    epg: 'http://skaztv.online/epg6.xml.gz'
   };
 
-  // 🔹 СОСТОЯНИЕ
   let state = {
     channels: [],
     epg: {},
-    favorites: JSON.parse(localStorage.getItem('iptv_fork_favorites') || '[]'),
-    filtered: [],
     focused: 0,
     current: null,
-    filter: 'all',
-    search: '',
-    hls: null
+    hls: null,
+    debug: false
   };
 
-  // 🔹 ЭЛЕМЕНТЫ
   const els = {
-    list: document.getElementById('channelList'),
-    search: document.getElementById('searchInput'),
+    list: document.getElementById('list'),
     video: document.getElementById('video'),
-    epgPanel: document.getElementById('epgPanel'),
-    epgChannel: document.getElementById('epgChannelName'),
-    epgNow: document.getElementById('epgNow'),
-    epgNext: document.getElementById('epgNext'),
-    epgProgress: document.getElementById('epgProgress'),
-    epgTime: document.getElementById('epgTime'),
-    playerChannel: document.getElementById('playerChannel'),
-    playerEpg: document.getElementById('playerEpg'),
-    playerTime: document.getElementById('playerTime'),
-    toast: document.getElementById('toast'),
-    statChannels: document.getElementById('statChannels'),
-    statEPG: document.getElementById('statEPG'),
-    statFav: document.getElementById('statFav')
+    status: document.getElementById('status'),
+    errorBox: document.getElementById('errorBox'),
+    errorTitle: document.getElementById('errorTitle'),
+    errorText: document.getElementById('errorText'),
+    errorCode: document.getElementById('errorCode'),
+    search: document.getElementById('search'),
+    chCount: document.getElementById('chCount'),
+    epgStatus: document.getElementById('epgStatus'),
+    debugInfo: document.getElementById('debugInfo')
   };
 
-  // 🔹 ИНИЦИАЛИЗАЦИЯ
-  window.addEventListener('load', async () => {
-    showToast('Загрузка плейлиста...');
-    await Promise.all([loadPlaylist(), loadEPG()]);
-    updateStats();
-    setInterval(updateEPG, 60000);
-    setInterval(() => els.playerTime.textContent = new Date().toLocaleTimeString('ru-RU'), 1000);
+  window.addEventListener('load', () => {
+    updateStatus('📥 Загрузка плейлиста...', 'warn');
+    loadPlaylist();
+    loadEPG();
     
     els.search.addEventListener('input', (e) => {
-      state.search = e.target.value.toLowerCase();
-      applyFilters();
+      const term = e.target.value.toLowerCase();
+      const filtered = state.channels.filter(ch => ch.name.toLowerCase().includes(term));
+      renderChannels(filtered);
     });
 
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        state.filter = btn.dataset.filter;
-        applyFilters();
-      });
+    document.addEventListener('keydown', (e) => {
+      if (e.keyCode === 38 && state.focused > 0) {
+        state.focused--;
+        renderChannels(getFilteredChannels());
+      } else if (e.keyCode === 40 && state.focused < state.channels.length - 1) {
+        state.focused++;
+        renderChannels(getFilteredChannels());
+      } else if (e.keyCode === 13) {
+        const ch = getFilteredChannels()[state.focused];
+        if (ch) playChannel(ch);
+      }
     });
-
-    setupControls();
   });
 
-  // 🔹 ЗАГРУЗКА ПЛЕЙЛИСТА
   async function loadPlaylist() {
     try {
-      const res = await fetch(CONFIG.playlist);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const text = await res.text();
+      console.log('Loading playlist:', CONFIG.playlist);
+      const response = await fetch(CONFIG.playlist);
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const text = await response.text();
+      console.log('Playlist size:', text.length, 'bytes');
+      
       state.channels = parseM3U(text);
-      applyFilters();
-      showToast(`Загружено ${state.channels.length} каналов`);
-    } catch (err) {
-      showToast('❌ Ошибка загрузки плейлиста');
-      console.error('Playlist error:', err);
-      els.list.innerHTML = '<div class="video-error"><div class="video-error-icon">📡</div>Не удалось загрузить плейлист</div>';
+      console.log('Parsed channels:', state.channels.length);
+      
+      els.chCount.textContent = state.channels.length;
+      renderChannels(state.channels);
+      updateStatus(`✅ Загружено ${state.channels.length} каналов`, 'ok');
+      
+      if (state.channels.length > 0) {
+        setTimeout(() => {
+          playChannel(state.channels[0]);
+        }, 1000);
+      }
+      
+    } catch (error) {
+      console.error('Playlist error:', error);
+      updateStatus('❌ Ошибка загрузки плейлиста', 'error');
+      showError(
+        'Не удалось загрузить плейлист',
+        error.message,
+        `URL: ${CONFIG.playlist}\nОшибка: ${error.message}\n\nВозможные причины:\n1. CORS блокировка\n2. Сервер недоступен\n3. Требуется VPN`
+      );
     }
   }
 
@@ -516,12 +290,10 @@
       if (line.startsWith('#EXTINF:')) {
         const comma = line.lastIndexOf(',');
         current.name = comma > -1 ? line.substring(comma + 1).trim() : 'Без названия';
-        const id = line.match(/tvg-id="([^"]*)"/i);
         const logo = line.match(/tvg-logo="([^"]*)"/i);
-        const group = line.match(/group-title="([^"]*)"/i);
-        if (id) current.tvg_id = id[1];
+        const id = line.match(/tvg-id="([^"]*)"/i);
         if (logo) current.logo = logo[1];
-        if (group) current.group = group[1];
+        if (id) current.tvg_id = id[1];
       } else if (line.startsWith('http')) {
         current.url = line;
         channels.push({...current});
@@ -531,19 +303,21 @@
     return channels;
   }
 
-  // 🔹 ЗАГРУЗКА EPG
   async function loadEPG() {
     try {
-      const res = await fetch(CONFIG.epg);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const buffer = await res.arrayBuffer();
+      console.log('Loading EPG:', CONFIG.epg);
+      const response = await fetch(CONFIG.epg);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const buffer = await response.arrayBuffer();
       const decompressed = pako.inflate(buffer, {to: 'string'});
       state.epg = parseXMLTV(decompressed);
-      els.statEPG.textContent = `${Object.keys(state.epg).length} каналов`;
-      if (state.current) updateEPG();
-    } catch (err) {
-      els.statEPG.textContent = 'Ошибка';
-      console.warn('EPG error:', err);
+      
+      els.epgStatus.textContent = `✅ ${Object.keys(state.epg).length}`;
+      console.log('EPG loaded:', Object.keys(state.epg).length, 'channels');
+    } catch (error) {
+      console.error('EPG error:', error);
+      els.epgStatus.textContent = '❌ Ошибка';
     }
   }
 
@@ -554,139 +328,61 @@
     
     doc.querySelectorAll('channel').forEach(ch => {
       const id = ch.getAttribute('id');
-      const name = ch.querySelector('display-name')?.textContent;
-      if (id) result[id] = {name, programs: []};
+      if (id) result[id] = { programs: [] };
     });
     
     doc.querySelectorAll('programme').forEach(prog => {
       const channelId = prog.getAttribute('channel');
       if (!result[channelId]) return;
       
-      const start = parseXMLTVDate(prog.getAttribute('start'));
-      const stop = parseXMLTVDate(prog.getAttribute('stop'));
-      const title = prog.querySelector('title')?.textContent || 'Без названия';
+      const start = parseDate(prog.getAttribute('start'));
+      const stop = parseDate(prog.getAttribute('stop'));
+      const title = prog.querySelector('title')?.textContent || '';
       
-      result[channelId].programs.push({start, stop, title});
-    });
-    
-    Object.values(result).forEach(ch => {
-      ch.programs.sort((a, b) => a.start - b.start);
+      result[channelId].programs.push({ start, stop, title });
     });
     
     return result;
   }
 
-  function parseXMLTVDate(dateStr) {
+  function parseDate(dateStr) {
     if (!dateStr) return 0;
     const y = dateStr.slice(0,4), m = dateStr.slice(4,6)-1, d = dateStr.slice(6,8);
     const H = dateStr.slice(8,10), M = dateStr.slice(10,12);
     return new Date(y, m, d, H, M).getTime();
   }
 
-  // 🔹 ФИЛЬТРАЦИЯ
-  function applyFilters() {
-    let filtered = [...state.channels];
-    
-    if (state.search) {
-      filtered = filtered.filter(ch => ch.name.toLowerCase().includes(state.search));
-    }
-    
-    if (state.filter === 'fav') {
-      filtered = filtered.filter(ch => state.favorites.includes(ch.url));
-    }
-    
-    state.filtered = filtered;
-    renderChannels();
-  }
-
-  // 🔹 ОТРИСОВКА
-  function renderChannels() {
-    els.list.innerHTML = '';
-    
-    if (state.filtered.length === 0) {
-      els.list.innerHTML = '<div class="loading">Каналы не найдены</div>';
-      return;
-    }
-    
-    state.filtered.forEach((ch, idx) => {
-      const div = document.createElement('div');
-      div.className = 'channel';
-      div.dataset.idx = idx;
-      
-      const isFav = state.favorites.includes(ch.url);
-      const epgCh = ch.tvg_id ? state.epg[ch.tvg_id] : null;
-      const now = Date.now();
-      const currentProg = epgCh?.programs?.find(p => now >= p.start && now < p.stop);
-      
-      div.innerHTML = `
-        <img class="channel-logo" src="${ch.logo || 'https://via.placeholder.com/44'}" onerror="this.style.display='none'">
-        <div class="channel-info">
-          <div class="channel-name">${ch.name}</div>
-          ${currentProg ? `<div class="channel-epg">${currentProg.title}</div>` : ''}
-        </div>
-        <div class="channel-fav ${isFav ? 'active' : ''}" onclick="toggleFavorite(${idx}, event)">
-          ${isFav ? '⭐' : '☆'}
-        </div>
-      `;
-      
-      div.addEventListener('click', () => {
-        state.focused = idx;
-        playChannel(ch);
-      });
-      
-      els.list.appendChild(div);
-    });
-    
-    updateFocus();
-  }
-
-  function updateFocus() {
-    document.querySelectorAll('.channel').forEach((el, i) => {
-      el.classList.toggle('focused', i === state.focused);
-      if (i === state.focused) el.scrollIntoView({block: 'nearest', behavior: 'smooth'});
-    });
-  }
-
-  // 🔹 ВОСПРОИЗВЕДЕНИЕ — ИСПРАВЛЕНО
   function playChannel(ch) {
     state.current = ch;
+    console.log('Playing channel:', ch.name, 'URL:', ch.url);
     
-    document.querySelectorAll('.channel').forEach(el => el.classList.remove('active'));
-    const activeEl = document.querySelector(`.channel[data-idx="${state.focused}"]`);
-    if (activeEl) activeEl.classList.add('active');
+    updateStatus(`▶ ${ch.name}`, 'ok');
     
-    els.playerChannel.textContent = ch.name;
-    els.epgChannel.textContent = ch.name;
-    els.epgPanel.style.display = 'block';
-    
-    // Убираем старую ошибку
-    document.querySelector('.video-error')?.remove();
-    
-    updateEPG();
-    showToast(`▶ ${ch.name}`);
-    
-    // Очищаем предыдущий HLS
+    // Cleanup
     if (state.hls) {
       state.hls.destroy();
       state.hls = null;
     }
-    
-    // Сбрасываем видео
     els.video.pause();
     els.video.src = '';
-    els.video.load();
     
-    // Пробуем воспроизвести
+    // Try to play
     setTimeout(() => {
-      tryPlayStream(ch.url);
+      tryPlay(ch.url);
     }, 100);
+    
+    // Highlight
+    document.querySelectorAll('.channel').forEach((el, i) => {
+      el.classList.toggle('active', getFilteredChannels()[i] === ch);
+    });
   }
 
-  function tryPlayStream(url) {
-    console.log('Playing stream:', url);
+  function tryPlay(url) {
+    console.log('Trying to play:', url);
     
-    // Проверяем поддержку HLS
-    if (Hls.isSupported() && (url.includes('.m3u8') || !url.includes('.mp4'))) {
+    // Check if HLS
+    if (Hls.isSupported() && (url.includes('.m3u8') || !url.match(/\.(mp4|webm|ogg)$/))) {
+      console.log('Using HLS.js');
       state.hls = new Hls({
         enableWorker: true,
         lowLatencyMode: true,
@@ -697,175 +393,140 @@
       state.hls.attachMedia(els.video);
       
       state.hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        console.log('HLS manifest parsed');
+        console.log('Manifest parsed, playing...');
         els.video.play().catch(err => {
-          console.warn('Autoplay prevented:', err);
-          showToast('Нажмите Play для запуска');
+          console.error('Play error:', err);
+          showError('Автовоспроизведение заблокировано', 'Нажмите Play на видео');
         });
       });
       
       state.hls.on(Hls.Events.ERROR, (event, data) => {
         console.error('HLS error:', data);
         if (data.fatal) {
-          showToast('❌ Ошибка потока');
-          // Пробуем нативный плеер
-          if (els.video.canPlayType('application/vnd.apple.mpegurl')) {
-            els.video.src = url;
-            els.video.play().catch(()=>{});
-          }
+          showError(
+            'Ошибка потока HLS',
+            `Тип: ${data.type}\nДетали: ${data.details}`,
+            `URL: ${url}\nПопробуйте другой канал`
+          );
+          updateStatus('❌ Ошибка потока', 'error');
         }
       });
       
     } else if (els.video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Safari iOS/macOS
+      console.log('Using native HLS');
       els.video.src = url;
-      els.video.play().catch(err => {
-        console.warn('Play error:', err);
-        showToast('Нажмите Play');
-      });
+      els.video.play().catch(err => console.error('Play error:', err));
     } else {
-      // Пробуем напрямую
+      console.log('Using direct playback');
       els.video.src = url;
       els.video.play().catch(err => {
-        console.warn('Play error:', err);
-        showToast('Нажмите Play для запуска');
+        console.error('Play error:', err);
+        showError('Не удалось воспроизвести', 'Нажмите Play вручную или попробуйте другой канал');
       });
     }
     
-    // Обработка ошибок видео
     els.video.onerror = () => {
       console.error('Video error:', els.video.error);
-      showToast('❌ Ошибка воспроизведения');
+      showError(
+        'Ошибка видео',
+        `Код: ${els.video.error?.code}\nСообщение: ${els.video.error?.message}`,
+        `URL: ${url}`
+      );
     };
   }
 
-  // 🔹 EPG
-  function updateEPG() {
-    if (!state.current) return;
-    
-    const epgCh = state.current.tvg_id ? state.epg[state.current.tvg_id] : null;
-    if (!epgCh?.programs?.length) {
-      els.epgNow.textContent = 'Программа недоступна';
-      els.epgNext.textContent = 'Далее: —';
-      els.epgProgress.style.width = '0%';
-      els.epgTime.textContent = '';
-      els.playerEpg.textContent = '—';
-      return;
-    }
-    
-    const now = Date.now();
-    const progs = epgCh.programs;
-    let current = null, next = null;
-    
-    for (let i = 0; i < progs.length; i++) {
-      if (progs[i].start <= now && progs[i].stop > now) {
-        current = progs[i];
-        next = progs[i + 1] || null;
-        break;
-      }
-    }
-    
-    if (current) {
-      els.epgNow.textContent = current.title;
-      els.epgNext.textContent = `Далее: ${next?.title || '—'}`;
-      els.playerEpg.textContent = current.title;
-      
-      const duration = current.stop - current.start;
-      const elapsed = now - current.start;
-      const percent = Math.min(100, Math.max(0, (elapsed / duration) * 100));
-      els.epgProgress.style.width = `${percent}%`;
-      
-      const fmt = ts => new Date(ts).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
-      els.epgTime.textContent = `${fmt(current.start)} — ${fmt(current.stop)}`;
-    }
+  function getFilteredChannels() {
+    const term = els.search.value.toLowerCase();
+    return term 
+      ? state.channels.filter(ch => ch.name.toLowerCase().includes(term))
+      : state.channels;
   }
 
-  // 🔹 ИЗБРАННОЕ
-  function toggleFavorite(idx, event) {
-    if (event) event.stopPropagation();
+  function renderChannels(channels) {
+    els.list.innerHTML = '';
+    const filtered = getFilteredChannels();
     
-    const ch = state.filtered[idx];
-    const url = ch.url;
-    const favIdx = state.favorites.indexOf(url);
-    
-    if (favIdx > -1) {
-      state.favorites.splice(favIdx, 1);
-      showToast(`Удалено из избранного: ${ch.name}`);
-    } else {
-      state.favorites.push(url);
-      showToast(`Добавлено в избранное: ${ch.name}`);
-    }
-    
-    localStorage.setItem('iptv_fork_favorites', JSON.stringify(state.favorites));
-    updateStats();
-    renderChannels();
-  }
-
-  function toggleFav() {
-    if (state.current) {
-      const idx = state.filtered.findIndex(ch => ch.url === state.current.url);
-      if (idx > -1) toggleFavorite(idx);
-    }
-  }
-
-  // 🔹 УПРАВЛЕНИЕ
-  function setupControls() {
-    document.addEventListener('keydown', (e) => {
-      const k = e.keyCode || e.which;
+    channels.forEach((ch, idx) => {
+      const div = document.createElement('div');
+      div.className = 'channel';
+      if (idx === state.focused) div.classList.add('focused');
       
-      if (k === 38 || k === 10004) {
-        e.preventDefault();
-        if (state.focused > 0) {
-          state.focused--;
-          updateFocus();
-        }
-      }
-      else if (k === 40 || k === 10005) {
-        e.preventDefault();
-        if (state.focused < state.filtered.length - 1) {
-          state.focused++;
-          updateFocus();
-        }
-      }
-      else if (k === 13 || k === 415 || k === 10252) {
-        e.preventDefault();
-        const ch = state.filtered[state.focused];
-        if (ch) playChannel(ch);
-      }
-      else if (k === 10009 || k === 413 || k === 27) {
-        e.preventDefault();
-        if (confirm('Выйти?')) window.close();
-      }
-      else if (k === 70) {
-        e.preventDefault();
-        toggleFav();
-      }
+      const epgCh = ch.tvg_id ? state.epg[ch.tvg_id] : null;
+      const now = Date.now();
+      const currentProg = epgCh?.programs?.find(p => now >= p.start && now < p.stop);
+      
+      div.innerHTML = `
+        <img class="channel-logo" src="${ch.logo || 'https://via.placeholder.com/40'}" onerror="this.style.display='none'">
+        <div style="flex:1">
+          <div class="channel-name">${ch.name}</div>
+          ${currentProg ? `<div class="channel-epg">${currentProg.title}</div>` : ''}
+        </div>
+      `;
+      
+      div.onclick = () => {
+        state.focused = idx;
+        playChannel(ch);
+      };
+      
+      els.list.appendChild(div);
     });
   }
 
-  function toggleMute() {
-    els.video.muted = !els.video.muted;
-    showToast(els.video.muted ? '🔇 Звук выключен' : '🔊 Звук включен');
+  function updateStatus(msg, type) {
+    const color = type === 'ok' ? 'status-ok' : type === 'error' ? 'status-error' : 'status-warn';
+    els.status.innerHTML = `<div class="status-item ${color}">${msg}</div>`;
   }
 
-  function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      document.getElementById('player').requestFullscreen().catch(()=>{});
-    } else {
-      document.exitFullscreen();
+  function showError(title, text, code) {
+    els.errorTitle.textContent = title;
+    els.errorText.textContent = text;
+    els.errorCode.textContent = code || '';
+    els.errorBox.classList.add('show');
+    console.error('Error:', title, text, code);
+  }
+
+  function closeError() {
+    els.errorBox.classList.remove('show');
+  }
+
+  async function testPlaylist() {
+    updateStatus('🧪 Тестирование...', 'warn');
+    try {
+      const response = await fetch(CONFIG.playlist, { mode: 'cors' });
+      console.log('Test response:', response.status, response.statusText);
+      
+      const text = await response.text();
+      const channels = parseM3U(text);
+      
+      if (channels.length > 0) {
+        const testUrl = channels[0].url;
+        console.log('Testing first channel:', testUrl);
+        
+        const testResp = await fetch(testUrl, { method: 'HEAD', mode: 'cors' });
+        console.log('Stream test:', testResp.status);
+        
+        alert(`✅ Плейлист работает!\nКаналов: ${channels.length}\nПервый канал: ${channels[0].name}\n\nЕсли видео не играет - проблема в формате потока или CORS`);
+      }
+      
+      updateStatus('✅ Тест пройден', 'ok');
+    } catch (error) {
+      alert(`❌ Ошибка теста:\n${error.message}`);
+      updateStatus('❌ Тест не пройден', 'error');
     }
   }
 
-  // 🔹 УТИЛИТЫ
-  function showToast(msg) {
-    els.toast.textContent = msg;
-    els.toast.classList.add('show');
-    setTimeout(() => els.toast.classList.remove('show'), 2500);
-  }
-
-  function updateStats() {
-    els.statChannels.textContent = state.channels.length;
-    els.statFav.textContent = state.favorites.length;
+  function toggleDebug() {
+    state.debug = !state.debug;
+    els.debugInfo.style.display = state.debug ? 'block' : 'none';
+    if (state.debug) {
+      els.debugInfo.innerHTML = `
+        Channels: ${state.channels.length}<br>
+        EPG: ${Object.keys(state.epg).length}<br>
+        HLS supported: ${Hls.isSupported()}<br>
+        Video element: ${els.video ? 'OK' : 'ERROR'}<br>
+        Current: ${state.current?.name || 'none'}
+      `;
+    }
   }
 </script>
 </body>
