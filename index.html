@@ -8,91 +8,210 @@
   <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
   <style>
     :root {
-      --bg: #0a0a0a; --panel: #151515; --text: #fff; --accent: #00d4ff;
-      --error: #ff4444; --success: #00ff88;
+      --bg: #0a0a0a;
+      --panel: #151515;
+      --panel-light: #1e1e1e;
+      --text: #ffffff;
+      --text-dim: #888888;
+      --accent: #00d4ff;
+      --success: #00ff88;
+      --error: #ff4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif;
-      height: 100vh; display: flex; flex-direction: column;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
+
     .header {
-      padding: 15px 24px; background: var(--panel);
+      padding: 12px 24px;
+      background: var(--panel);
       border-bottom: 2px solid var(--accent);
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
     }
     .title { font-size: 20px; font-weight: bold; color: var(--accent); }
-    .stats { font-size: 12px; display: flex; gap: 20px; }
-    .stats span { color: var(--accent); }
-    
+    .stats { font-size: 12px; color: var(--text-dim); display: flex; gap: 20px; }
+    .stats span { color: var(--accent); font-weight: 600; }
+
     .main { display: flex; flex: 1; overflow: hidden; }
+
     .sidebar {
-      width: 350px; background: var(--panel);
-      border-right: 1px solid #333; display: flex; flex-direction: column;
+      width: 400px;
+      background: var(--panel);
+      border-right: 1px solid #333;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
     }
-    
+
     .search-box { padding: 15px; border-bottom: 1px solid #333; }
     .search-box input {
-      width: 100%; padding: 10px; background: var(--bg);
-      border: 1px solid #333; border-radius: 6px; color: white; font-size: 14px;
+      width: 100%;
+      padding: 10px 15px;
+      background: var(--bg);
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 14px;
     }
-    
+    .search-box input:focus { border-color: var(--accent); outline: none; }
+
     .channel-list { flex: 1; overflow-y: auto; padding: 8px; }
+    .channel-list::-webkit-scrollbar { width: 6px; }
+    .channel-list::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
     .channel {
-      padding: 12px; margin: 4px 0; border-radius: 6px;
-      cursor: pointer; display: flex; align-items: center; gap: 10px;
+      padding: 12px 15px;
+      margin: 4px 0;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       border: 2px solid transparent;
+      transition: all 0.2s;
     }
-    .channel:hover { background: #1e1e1e; }
+    .channel:hover { background: var(--panel-light); transform: translateX(3px); }
     .channel.focused { border-color: var(--accent); background: rgba(0, 212, 255, 0.1); }
     .channel.active { border-color: var(--accent); background: rgba(0, 212, 255, 0.2); }
-    .channel-logo { width: 40px; height: 40px; border-radius: 6px; background: #333; }
-    .channel-name { font-size: 14px; font-weight: 600; }
-    .channel-epg { font-size: 11px; color: #888; margin-top: 3px; }
-    
+
+    .channel-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: var(--panel-light);
+      flex-shrink: 0;
+    }
+    .channel-info { flex: 1; min-width: 0; }
+    .channel-name {
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .channel-epg {
+      font-size: 12px;
+      color: var(--text-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .player {
-      flex: 1; background: #000; display: flex;
-      align-items: center; justify-content: center; position: relative;
+      flex: 1;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
     }
-    video { width: 100%; height: 100%; }
-    
-    .info {
-      position: absolute; top: 20px; left: 20px;
-      background: rgba(0,0,0,0.8); padding: 15px;
-      border-radius: 8px; font-size: 13px;
+    video {
+      width: 100%;
+      height: 100%;
+      background: #000;
     }
-    .info-item { margin: 5px 0; }
-    .ok { color: var(--success); }
-    .error { color: var(--error); }
-    
-    .controls {
-      position: absolute; bottom: 30px; left: 50%;
-      transform: translateX(-50%); display: flex; gap: 15px;
+
+    .player-info {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.8);
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      pointer-events: none;
     }
-    .btn {
-      padding: 10px 20px; background: rgba(255,255,255,0.1);
-      border: 2px solid rgba(255,255,255,0.3); border-radius: 8px;
-      color: white; cursor: pointer; font-size: 14px;
+    .player-channel { font-weight: 600; margin-bottom: 5px; }
+    .player-epg { color: var(--text-dim); font-size: 13px; }
+
+    .player-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 15px;
     }
-    .btn:hover { background: var(--accent); color: black; border-color: var(--accent); }
-    
-    .notice {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 100, 0, 0.9);
-      padding: 30px; border-radius: 10px;
-      text-align: center; display: none;
+    .control-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.3);
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
     }
-    .notice.show { display: block; }
+    .control-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: scale(1.1);
+      color: black;
+    }
+
+    .player-hint {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      background: rgba(0,0,0,0.6);
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+
+    .status {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.8);
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .status.ok { color: var(--success); }
+    .status.error { color: var(--error); }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      color: var(--text-dim);
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--panel-light);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
+
   <div class="header">
     <div class="title">📺 IPTV_FORK</div>
     <div class="stats">
       <div>Каналов: <span id="chCount">0</span></div>
       <div>EPG: <span id="epgStatus">—</span></div>
-      <div>Прокси: <span id="proxyStatus">OFF</span></div>
     </div>
   </div>
 
@@ -101,43 +220,34 @@
       <div class="search-box">
         <input type="text" id="search" placeholder="🔍 Поиск каналов...">
       </div>
-      <div class="channel-list" id="list"></div>
+      <div class="channel-list" id="list">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
     </div>
 
     <div class="player" id="player">
       <video id="video" controls autoplay playsinline></video>
       
-      <div class="info" id="info">
-        <div class="info-item">📡 Загрузка...</div>
+      <div class="player-info">
+        <div class="player-channel" id="playerChannel">Выберите канал</div>
+        <div class="player-epg" id="playerEpg">—</div>
       </div>
 
-      <div class="notice" id="notice">
-        <h3 style="margin-bottom:15px">🔧 Решение Mixed Content</h3>
-        <p style="margin-bottom:15px; font-size:13px; color:#ccc">
-          Потоки HTTP не работают на HTTPS сайте.<br><br>
-          <strong>Выберите решение:</strong>
-        </p>
-        <button class="btn" onclick="enableProxy()" style="margin:5px">
-          ✅ Включить HTTPS прокси
-        </button>
-        <button class="btn" onclick="closeNotice()" style="margin:5px">
-          ❌ Закрыть
-        </button>
+      <div class="status" id="status">Готов</div>
+
+      <div class="player-controls">
+        <button class="control-btn" onclick="toggleMute()" title="Звук">🔊</button>
+        <button class="control-btn" onclick="toggleFullscreen()" title="На весь экран">⛶</button>
       </div>
 
-      <div class="controls">
-        <button class="btn" onclick="toggleProxy()">🔄 Прокси: <span id="proxyBtn">OFF</span></button>
-        <button class="btn" onclick="testStream()">🧪 Тест</button>
-      </div>
+      <div class="player-hint">↑↓ Навигация | OK ▶ | Back ↩</div>
     </div>
   </div>
 
 <script>
   const CONFIG = {
     playlist: 'https://skaz.tv/play/82866376f',
-    epg: 'http://skaztv.online/epg6.xml.gz',
-    // Прокси для конвертации HTTP → HTTPS
-    proxy: 'https://api.allorigins.win/raw?url='
+    epg: 'http://skaztv.online/epg6.xml.gz'
   };
 
   let state = {
@@ -145,110 +255,78 @@
     epg: {},
     focused: 0,
     current: null,
-    hls: null,
-    useProxy: false  // По умолчанию выключен
+    hls: null
   };
 
   const els = {
     list: document.getElementById('list'),
     video: document.getElementById('video'),
-    info: document.getElementById('info'),
     search: document.getElementById('search'),
     chCount: document.getElementById('chCount'),
     epgStatus: document.getElementById('epgStatus'),
-    proxyStatus: document.getElementById('proxyStatus'),
-    proxyBtn: document.getElementById('proxyBtn'),
-    notice: document.getElementById('notice')
+    playerChannel: document.getElementById('playerChannel'),
+    playerEpg: document.getElementById('playerEpg'),
+    status: document.getElementById('status')
   };
 
-  window.addEventListener('load', () => {
-    updateInfo('📥 Загрузка плейлиста...');
-    loadPlaylist();
-    loadEPG();
+  // Инициализация
+  window.addEventListener('load', async () => {
+    await loadPlaylist();
+    await loadEPG();
+    setupControls();
     
+    // Поиск
     els.search.addEventListener('input', (e) => {
       const term = e.target.value.toLowerCase();
       const filtered = state.channels.filter(ch => ch.name.toLowerCase().includes(term));
       renderChannels(filtered);
     });
 
+    // Клавиатура
     document.addEventListener('keydown', (e) => {
-      if (e.keyCode === 38 && state.focused > 0) {
-        state.focused--; renderChannels(getFiltered());
-      } else if (e.keyCode === 40 && state.focused < state.channels.length - 1) {
-        state.focused++; renderChannels(getFiltered());
-      } else if (e.keyCode === 13) {
-        const ch = getFiltered()[state.focused];
+      const k = e.keyCode;
+      if (k === 38 && state.focused > 0) { // Up
+        e.preventDefault();
+        state.focused--;
+        updateFocus();
+      } else if (k === 40 && state.focused < state.channels.length - 1) { // Down
+        e.preventDefault();
+        state.focused++;
+        updateFocus();
+      } else if (k === 13 || k === 415) { // OK/Play
+        e.preventDefault();
+        const ch = state.channels[state.focused];
         if (ch) playChannel(ch);
       }
     });
-
-    // Показываем уведомление о Mixed Content
-    setTimeout(() => {
-      els.notice.classList.add('show');
-    }, 2000);
   });
 
-  function enableProxy() {
-    state.useProxy = true;
-    updateProxyUI();
-    closeNotice();
-    updateInfo('✅ Прокси включен. Перезагрузка плейлиста...');
-    setTimeout(() => loadPlaylist(), 500);
-  }
-
-  function closeNotice() {
-    els.notice.classList.remove('show');
-  }
-
-  function toggleProxy() {
-    state.useProxy = !state.useProxy;
-    updateProxyUI();
-    updateInfo(state.useProxy ? '✅ Прокси включен' : '❌ Прокси выключен');
-    setTimeout(() => loadPlaylist(), 500);
-  }
-
-  function updateProxyUI() {
-    els.proxyStatus.textContent = state.useProxy ? 'ON' : 'OFF';
-    els.proxyStatus.className = state.useProxy ? 'ok' : 'error';
-    els.proxyBtn.textContent = state.useProxy ? 'ON' : 'OFF';
-    els.proxyBtn.style.color = state.useProxy ? 'var(--success)' : 'var(--error)';
-  }
-
-  function proxyUrl(url) {
-    if (!state.useProxy) return url;
-    // Добавляем прокси только для HTTP URL
-    if (url.startsWith('http://')) {
-      return CONFIG.proxy + encodeURIComponent(url);
-    }
-    return url;
-  }
-
+  // Загрузка плейлиста
   async function loadPlaylist() {
     try {
-      const url = proxyUrl(CONFIG.playlist);
-      console.log('Loading playlist:', url);
+      setStatus('Загрузка...', '');
+      const res = await fetch(CONFIG.playlist);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      
-      const text = await response.text();
+      const text = await res.text();
       state.channels = parseM3U(text);
       
       els.chCount.textContent = state.channels.length;
       renderChannels(state.channels);
-      updateInfo(`✅ Загружено ${state.channels.length} каналов`);
+      setStatus(`✅ ${state.channels.length} каналов`, 'ok');
       
+      // Автозапуск первого канала
       if (state.channels.length > 0) {
         setTimeout(() => playChannel(state.channels[0]), 1000);
       }
-    } catch (error) {
-      console.error('Error:', error);
-      updateInfo('❌ Ошибка загрузки плейлиста');
-      alert(`Ошибка: ${error.message}\n\nПопробуйте включить прокси!`);
+    } catch (err) {
+      console.error('Playlist error:', err);
+      setStatus('❌ Ошибка плейлиста', 'error');
+      els.list.innerHTML = `<div class="loading" style="color:var(--error)">Ошибка загрузки:<br>${err.message}</div>`;
     }
   }
 
+  // Парсинг M3U
   function parseM3U(text) {
     const channels = [];
     let current = {};
@@ -260,10 +338,14 @@
       if (line.startsWith('#EXTINF:')) {
         const comma = line.lastIndexOf(',');
         current.name = comma > -1 ? line.substring(comma + 1).trim() : 'Без названия';
+        
         const logo = line.match(/tvg-logo="([^"]*)"/i);
         const id = line.match(/tvg-id="([^"]*)"/i);
+        const group = line.match(/group-title="([^"]*)"/i);
+        
         if (logo) current.logo = logo[1];
         if (id) current.tvg_id = id[1];
+        if (group) current.group = group[1];
       } else if (line.startsWith('http')) {
         current.url = line;
         channels.push({...current});
@@ -273,23 +355,24 @@
     return channels;
   }
 
+  // Загрузка EPG
   async function loadEPG() {
     try {
-      const url = proxyUrl(CONFIG.epg);
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const res = await fetch(CONFIG.epg);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       
-      const buffer = await response.arrayBuffer();
+      const buffer = await res.arrayBuffer();
       const decompressed = pako.inflate(buffer, {to: 'string'});
       state.epg = parseXMLTV(decompressed);
       
-      els.epgStatus.textContent = `✅ ${Object.keys(state.epg).length}`;
-    } catch (error) {
-      console.error('EPG error:', error);
-      els.epgStatus.textContent = '❌ Ошибка';
+      els.epgStatus.textContent = `${Object.keys(state.epg).length}`;
+    } catch (err) {
+      console.warn('EPG error:', err);
+      els.epgStatus.textContent = 'Ошибка';
     }
   }
 
+  // Парсинг XMLTV
   function parseXMLTV(xml) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(xml, 'text/xml');
@@ -321,89 +404,108 @@
     return new Date(y, m, d, H, M).getTime();
   }
 
+  // Воспроизведение канала
   function playChannel(ch) {
     state.current = ch;
-    console.log('Playing:', ch.name, ch.url);
     
-    updateInfo(`▶ ${ch.name}`);
+    // UI
+    els.playerChannel.textContent = ch.name;
+    setStatus(`▶ ${ch.name}`, 'ok');
     
+    // Подсветка
+    document.querySelectorAll('.channel').forEach((el, i) => {
+      el.classList.toggle('active', i === state.focused);
+    });
+    
+    // Очистка предыдущего
     if (state.hls) {
       state.hls.destroy();
       state.hls = null;
     }
     els.video.pause();
     els.video.src = '';
+    els.video.load();
     
+    // Обновление EPG
+    updateEPG();
+    
+    // Запуск с небольшой задержкой
     setTimeout(() => {
-      const streamUrl = proxyUrl(ch.url);
-      console.log('Stream URL:', streamUrl);
-      tryPlay(streamUrl);
+      tryPlay(ch.url);
     }, 100);
-    
-    document.querySelectorAll('.channel').forEach((el, i) => {
-      el.classList.toggle('active', getFiltered()[i] === ch);
-    });
   }
 
+  // Попытка воспроизведения
   function tryPlay(url) {
+    console.log('Playing:', url);
+    
+    // Проверяем поддержку HLS
     if (Hls.isSupported()) {
-      state.hls = new Hls({ enableWorker: true });
+      state.hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: false,
+        backBufferLength: 90
+      });
+      
       state.hls.loadSource(url);
       state.hls.attachMedia(els.video);
       
       state.hls.on(Hls.Events.MANIFEST_PARSED, () => {
         console.log('Manifest parsed');
-        els.video.play().catch(err => console.warn('Autoplay blocked:', err));
-        updateInfo(`▶ ${state.current.name} (Прокси: ${state.useProxy ? 'ON' : 'OFF'})`);
+        els.video.play().catch(() => {
+          console.log('Autoplay prevented');
+        });
       });
       
       state.hls.on(Hls.Events.ERROR, (event, data) => {
         console.error('HLS error:', data);
         if (data.fatal) {
-          updateInfo('❌ Ошибка потока');
-          if (!state.useProxy && url.startsWith('http://')) {
-            setTimeout(() => {
-              if (confirm('Включить HTTPS прокси для этого потока?')) {
-                enableProxy();
-              }
-            }, 500);
-          }
+          setStatus('❌ Ошибка потока', 'error');
         }
       });
-    } else if (els.video.canPlayType('application/vnd.apple.mpegurl')) {
+    }
+    // Safari
+    else if (els.video.canPlayType('application/vnd.apple.mpegurl')) {
       els.video.src = url;
-      els.video.play().catch(err => console.warn('Play error:', err));
+      els.video.addEventListener('loadedmetadata', () => {
+        els.video.play().catch(() => {});
+      });
+    }
+    // Обычный видео тег
+    else {
+      els.video.src = url;
+      els.video.play().catch(() => {});
     }
     
+    // Обработка ошибок видео
     els.video.onerror = () => {
-      console.error('Video error');
-      updateInfo('❌ Ошибка воспроизведения');
+      console.error('Video error:', els.video.error);
+      setStatus('❌ Ошибка видео', 'error');
     };
   }
 
-  function getFiltered() {
-    const term = els.search.value.toLowerCase();
-    return term 
-      ? state.channels.filter(ch => ch.name.toLowerCase().includes(term))
-      : state.channels;
-  }
-
+  // Отрисовка каналов
   function renderChannels(channels) {
     els.list.innerHTML = '';
-    const filtered = getFiltered();
+    
+    if (channels.length === 0) {
+      els.list.innerHTML = '<div class="loading">Каналы не найдены</div>';
+      return;
+    }
     
     channels.forEach((ch, idx) => {
       const div = document.createElement('div');
       div.className = 'channel';
       if (idx === state.focused) div.classList.add('focused');
       
+      // EPG для этого канала
       const epgCh = ch.tvg_id ? state.epg[ch.tvg_id] : null;
       const now = Date.now();
       const currentProg = epgCh?.programs?.find(p => now >= p.start && now < p.stop);
       
       div.innerHTML = `
-        <img class="channel-logo" src="${ch.logo || 'https://via.placeholder.com/40'}" onerror="this.style.display='none'">
-        <div style="flex:1">
+        <img class="channel-logo" src="${ch.logo || 'https://via.placeholder.com/44'}" onerror="this.style.display='none'">
+        <div class="channel-info">
           <div class="channel-name">${ch.name}</div>
           ${currentProg ? `<div class="channel-epg">${currentProg.title}</div>` : ''}
         </div>
@@ -418,28 +520,59 @@
     });
   }
 
-  function updateInfo(msg) {
-    els.info.innerHTML = `<div class="info-item ${msg.includes('❌') ? 'error' : msg.includes('✅') ? 'ok' : ''}">${msg}</div>`;
+  function updateFocus() {
+    document.querySelectorAll('.channel').forEach((el, i) => {
+      el.classList.toggle('focused', i === state.focused);
+      if (i === state.focused) {
+        el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    });
   }
 
-  async function testStream() {
-    if (!state.current) {
-      alert('Выберите канал сначала');
+  // Обновление EPG
+  function updateEPG() {
+    if (!state.current) return;
+    
+    const epgCh = state.current.tvg_id ? state.epg[state.current.tvg_id] : null;
+    if (!epgCh?.programs?.length) {
+      els.playerEpg.textContent = '—';
       return;
     }
     
-    const url = state.current.url;
-    const proxiedUrl = proxyUrl(url);
+    const now = Date.now();
+    const current = epgCh.programs.find(p => now >= p.start && now < p.stop);
     
-    try {
-      updateInfo('🧪 Тестирование...');
-      const response = await fetch(proxiedUrl, { method: 'HEAD' });
-      alert(`✅ Поток доступен!\n\nURL: ${url}\nПрокси: ${state.useProxy ? 'ON' : 'OFF'}\nStatus: ${response.status}`);
-      updateInfo('✅ Тест пройден');
-    } catch (error) {
-      alert(`❌ Ошибка теста:\n${error.message}\n\nПопробуйте ${state.useProxy ? 'выключить' : 'включить'} прокси`);
-      updateInfo('❌ Тест не пройден');
+    if (current) {
+      els.playerEpg.textContent = current.title;
+    } else {
+      els.playerEpg.textContent = '—';
     }
+  }
+
+  // Управление
+  function setupControls() {
+    // Клик по видео - пауза/плей
+    els.video.addEventListener('click', () => {
+      if (els.video.paused) els.video.play();
+      else els.video.pause();
+    });
+  }
+
+  function toggleMute() {
+    els.video.muted = !els.video.muted;
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.getElementById('player').requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  function setStatus(msg, type) {
+    els.status.textContent = msg;
+    els.status.className = 'status ' + type;
   }
 </script>
 </body>
