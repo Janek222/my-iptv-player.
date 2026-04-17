@@ -10,11 +10,11 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif;
-      height: 100vh; display: flex; flex-direction: column;
+      height: 100vh; display: flex; flex-direction: column; overflow: hidden;
     }
     .header {
       padding: 15px 24px; background: #151515; border-bottom: 2px solid #00d4ff;
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
     }
     .title { font-size: 20px; font-weight: bold; color: #00d4ff; }
     .stats { font-size: 12px; display: flex; gap: 20px; }
@@ -52,11 +52,29 @@
     .info {
       position: absolute; top: 20px; left: 20px;
       background: rgba(0,0,0,0.8); padding: 15px;
-      border-radius: 8px; font-size: 14px; max-width: 400px;
+      border-radius: 8px; font-size: 14px;
     }
-    .info-item { margin: 5px 0; }
     .ok { color: #00ff88; }
     .error { color: #ff4444; }
+    .warn { color: #ffa500; }
+    
+    .epg-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.8);
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 13px;
+      max-width: 350px;
+      display: none;
+    }
+    .epg-panel.show { display: block; }
+    .epg-title { font-weight: bold; color: #00d4ff; margin-bottom: 8px; }
+    .epg-now { color: #fff; margin-bottom: 5px; }
+    .epg-next { color: #888; margin-bottom: 8px; }
+    .epg-progress { height: 4px; background: #333; border-radius: 2px; overflow: hidden; }
+    .epg-bar { height: 100%; background: #00d4ff; width: 0%; transition: width 0.5s; }
     
     .controls {
       position: absolute; bottom: 30px; left: 50%;
@@ -75,15 +93,15 @@
       padding: 8px 12px; border-radius: 6px;
     }
     
-    .warning {
+    .alert {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       background: rgba(80, 40, 0, 0.95);
       border: 2px solid #ffa500;
-      padding: 30px; border-radius: 12px;
+      padding: 25px; border-radius: 12px;
       text-align: center; display: none; max-width: 450px;
     }
-    .warning.show { display: block; }
+    .alert.show { display: block; }
   </style>
 </head>
 <body>
@@ -91,7 +109,7 @@
     <div class="title">📺 IPTV_FORK</div>
     <div class="stats">
       <div>Каналов: <span id="chCount">0</span></div>
-      <div>EPG: <span id="epgStatus">—</span></div>
+      <div>EPG: <span id="epgStatus">Загрузка...</span></div>
     </div>
   </div>
 
@@ -107,28 +125,31 @@
       <video id="video" controls autoplay playsinline></video>
       
       <div class="info" id="info">
-        <div class="info-item">📡 Загрузка...</div>
+        <div class="warn">📡 Загрузка плейлиста...</div>
       </div>
 
-      <div class="warning" id="warning">
-        <h3 style="margin-bottom:15px; color:#ffa500">⚠️ Ошибка безопасности браузера</h3>
-        <p style="margin-bottom:15px; font-size:13px; color:#ddd; line-height:1.5">
-          Ваш сайт работает по <b>HTTPS</b>, а потоки канала — по <b>HTTP</b>.<br>
-          Браузер блокирует загрузку незащищённого видео на защищённой странице.<br><br>
-          <b>Как решить:</b><br>
-          1. Нажмите кнопку «Открыть поток» ниже<br>
-          2. Или используйте это приложение на Smart TV / Android TV<br>
-          3. Или разместите сайт на хостинге с поддержкой HTTP
-        </p>
-        <button class="btn" onclick="closeWarning()">Закрыть</button>
+      <div class="epg-panel" id="epgPanel">
+        <div class="epg-title" id="epgChannel">—</div>
+        <div class="epg-now" id="epgNow">Загрузка...</div>
+        <div class="epg-next" id="epgNext">Далее: —</div>
+        <div class="epg-progress"><div class="epg-bar" id="epgBar"></div></div>
       </div>
 
       <div class="controls">
-        <button class="btn" onclick="openStream()">📺 Открыть поток</button>
+        <button class="btn" onclick="openInNewTab()">📺 Открыть в новой вкладке</button>
         <button class="btn" onclick="location.reload()">🔄 Обновить</button>
       </div>
 
       <div class="hint">↑↓ Навигация | OK ▶ | Назад ↩</div>
+
+      <div class="alert" id="alert">
+        <h3 style="margin-bottom:15px; color:#ffa500">⚠️ Браузер блокирует поток</h3>
+        <p style="margin-bottom:15px; font-size:13px; color:#ddd; line-height:1.5">
+          HTTPS сайт не может загружать HTTP потоки.<br><br>
+          <b>Решение:</b> нажмите «Открыть в новой вкладке»
+        </p>
+        <button class="btn" onclick="closeAlert()">Закрыть</button>
+      </div>
     </div>
   </div>
 
@@ -149,7 +170,12 @@
     search: document.getElementById('search'),
     chCount: document.getElementById('chCount'),
     epgStatus: document.getElementById('epgStatus'),
-    warning: document.getElementById('warning')
+    epgPanel: document.getElementById('epgPanel'),
+    epgChannel: document.getElementById('epgChannel'),
+    epgNow: document.getElementById('epgNow'),
+    epgNext: document.getElementById('epgNext'),
+    epgBar: document.getElementById('epgBar'),
+    alert: document.getElementById('alert')
   };
 
   window.addEventListener('load', () => {
@@ -178,7 +204,7 @@
       showInfo(`✅ Загружено каналов: ${channels.length}`, 'ok');
       
       if (channels.length > 0) {
-        setTimeout(() => play(channels[0]), 1000);
+        setTimeout(() => play(channels[0]), 1500);
       }
     } catch (err) {
       showInfo('❌ Ошибка загрузки плейлиста', 'error');
@@ -212,9 +238,11 @@
       const buffer = await res.arrayBuffer();
       const xml = pako.inflate(buffer, {to: 'string'});
       epg = parseXMLTV(xml);
-      els.epgStatus.textContent = `${Object.keys(epg).length} каналов`;
+      els.epgStatus.textContent = `✅ ${Object.keys(epg).length}`;
+      updateEPG();
     } catch (err) {
-      els.epgStatus.textContent = 'Ошибка';
+      console.log('EPG error:', err);
+      els.epgStatus.textContent = '❌ Ошибка';
     }
   }
 
@@ -264,7 +292,7 @@
         <img class="logo" src="${ch.logo||'https://via.placeholder.com/44'}" onerror="this.style.display='none'">
         <div style="flex:1;min-width:0">
           <div class="ch-name">${ch.name}</div>
-          ${prog ? `<div class="ch-epg">${prog.title}</div>` : '<div class="ch-epg">Программа недоступна</div>'}
+          ${prog ? `<div class="ch-epg">${prog.title}</div>` : '<div class="ch-epg">Нет данных</div>'}
         </div>
       `;
       div.onclick = () => {
@@ -278,6 +306,9 @@
   function play(ch) {
     current = ch;
     showInfo(`▶ ${ch.name}`, 'ok');
+    els.epgPanel.classList.add('show');
+    els.epgChannel.textContent = ch.name;
+    updateEPG();
     
     if (hls) { hls.destroy(); hls = null; }
     els.video.pause();
@@ -285,60 +316,82 @@
     els.video.load();
     
     setTimeout(() => {
-      tryNativeOrHls(ch.url);
+      tryPlay(ch.url);
     }, 100);
   }
 
-  function tryNativeOrHls(url) {
-    if (els.video.canPlayType('application/vnd.apple.mpegurl')) {
+  function tryPlay(url) {
+    if (Hls.isSupported()) {
+      hls = new Hls({ enableWorker: true });
+      hls.loadSource(url);
+      hls.attachMedia(els.video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        els.video.play().catch(()=>{});
+      });
+      hls.on(Hls.Events.ERROR, (e, data) => {
+        if (data.fatal) {
+          showInfo('❌ Ошибка потока', 'error');
+          els.alert.classList.add('show');
+        }
+      });
+    } else if (els.video.canPlayType('application/vnd.apple.mpegurl')) {
       els.video.src = url;
-      els.video.play().catch(() => tryHlsJs(url));
-    } else if (Hls.isSupported()) {
-      tryHlsJs(url);
+      els.video.play().catch(()=>{});
     } else {
       els.video.src = url;
       els.video.play().catch(()=>{});
     }
     
     els.video.onerror = () => {
-      showInfo('❌ Ошибка воспроизведения потока', 'error');
-      els.warning.classList.add('show');
+      showInfo('❌ Ошибка воспроизведения', 'error');
+      els.alert.classList.add('show');
     };
   }
 
-  function tryHlsJs(url) {
-    try {
-      hls = new Hls({ enableWorker: true });
-      hls.loadSource(url);
-      hls.attachMedia(els.video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => els.video.play().catch(()=>{}));
-      hls.on(Hls.Events.ERROR, (e, data) => {
-        if (data.fatal) {
-          showInfo('❌ Ошибка потока', 'error');
-          els.warning.classList.add('show');
-        }
-      });
-    } catch (err) {
-      showInfo('❌ Не удалось запустить плеер', 'error');
-    }
-  }
-
-  function openStream() {
-    if (!current) {
-      alert('Сначала выберите канал из списка');
+  function updateEPG() {
+    if (!current) return;
+    const epgCh = current.tvg_id ? epg[current.tvg_id] : null;
+    if (!epgCh?.progs?.length) {
+      els.epgNow.textContent = 'Программа недоступна';
+      els.epgNext.textContent = 'Далее: —';
+      els.epgBar.style.width = '0%';
       return;
     }
-    window.open(current.url, '_blank');
+    const now = Date.now();
+    const currentProg = epgCh.progs.find(p => now >= p.start && now < p.stop);
+    const nextProg = epgCh.progs.find(p => p.start > now);
+    
+    if (currentProg) {
+      els.epgNow.textContent = `Сейчас: ${currentProg.title}`;
+      els.epgNext.textContent = `Далее: ${nextProg?.title || '—'}`;
+      const dur = currentProg.stop - currentProg.start;
+      const elap = now - currentProg.start;
+      els.epgBar.style.width = `${Math.min(100, (elap/dur)*100)}%`;
+    } else {
+      els.epgNow.textContent = 'Сейчас: —';
+      els.epgNext.textContent = nextProg ? `Далее: ${nextProg.title}` : 'Далее: —';
+      els.epgBar.style.width = '0%';
+    }
   }
 
-  function closeWarning() {
-    els.warning.classList.remove('show');
+  function openInNewTab() {
+    if (current) {
+      window.open(current.url, '_blank');
+    } else {
+      alert('Сначала выберите канал');
+    }
+  }
+
+  function closeAlert() {
+    els.alert.classList.remove('show');
   }
 
   function showInfo(msg, type) {
-    const color = type === 'ok' ? '#00ff88' : '#ff4444';
-    els.info.innerHTML = `<div class="info-item" style="color:${color}">${msg}</div>`;
+    els.info.innerHTML = `<div class="${type}">${msg}</div>`;
   }
+
+  // Обновляем EPG каждую минуту
+  setInterval(updateEPG, 60000);
 </script>
 </body>
 </html>
